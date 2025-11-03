@@ -62,6 +62,9 @@ void ConfigModel::readConfig(const QString& file)
 		m_cols[i] =
 			settings.value(i == 0 ? QString("num_cols") : QString("num_cols%1").arg(i + 1), i == 0 ? 5 : m_cols[0])
 				.toInt();
+
+		// just to be sure the vector is of the correct size
+		m_sounds[i].resize(m_rows[i] * m_cols[i]);
 	}
 	int volume_old = settings.value("volume", 50).toInt();
 	m_volumeLocal = settings.value("volumeLocal", volume_old).toInt();
