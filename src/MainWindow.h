@@ -129,6 +129,7 @@ class MainWindow : public QWidget
 
 	Ui::MainWindow* ui;
 	std::vector<SoundButton*> m_buttons;
+	std::vector<QPushButton*> m_button_controls;
 	ConfigModel* m_model;
 	QBoxLayout* m_configArea;
 	ModelObserver m_modelObserver;

@@ -388,10 +388,64 @@ void MainWindow::createButtons()
 	for (SoundButton* button : m_buttons)
 		delete button;
 	m_buttons.clear();
+	
+	for(auto button : m_button_controls)
+		delete button;
+	m_button_controls.clear();
 
 	int numRows = m_model->getRows();
 	int numCols = m_model->getCols();
 
+	for (int col = 0; col < numCols; col++)
+	{
+		auto elem = new QPushButton(this);
+		elem->setFixedHeight(20);
+		elem->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
+		elem->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(elem, &QPushButton::customContextMenuRequested, this, [elem, col, this](const QPoint &pos) {
+			QMenu menu;
+			auto addLAction = menu.addAction("Add column left");
+			auto addRAction = menu.addAction("Add column right");
+			auto removeAction = menu.addAction("Remove column");
+
+			auto selectedAction = menu.exec(elem->mapToGlobal(pos));
+			if (selectedAction == addLAction) {
+				m_model->insertCol(col);
+			} else if (selectedAction == addRAction) {
+				m_model->insertCol(col + 1);
+			} else if (selectedAction == removeAction) {
+				m_model->removeCol(col);
+			}
+		});
+		ui->gridLayout->addWidget(elem, 0, col + 1);
+		m_button_controls.push_back(elem);
+	}
+	
+	for (int row = 0; row < numRows; row++)
+	{
+		auto elem = new QPushButton(this);
+		elem->setFixedWidth(20);
+		elem->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Ignored);
+		elem->setContextMenuPolicy(Qt::CustomContextMenu);
+		connect(elem, &QPushButton::customContextMenuRequested, this, [elem, row, this](const QPoint &pos) {
+			QMenu menu;
+			auto addLAction = menu.addAction("Add row above");
+			auto addRAction = menu.addAction("Add row below");
+			auto removeAction = menu.addAction("Remove row");
+
+			auto selectedAction = menu.exec(elem->mapToGlobal(pos));
+			if (selectedAction == addLAction) {
+				m_model->insertRow(row);
+			} else if (selectedAction == addRAction) {
+				m_model->insertRow(row + 1);
+			} else if (selectedAction == removeAction) {
+				m_model->removeRow(row);
+			}
+		});
+		ui->gridLayout->addWidget(elem, row + 1, 0);
+		m_button_controls.push_back(elem);
+	}
+	
 	for (int i = 0; i < numRows; i++)
 	{
 		for (int j = 0; j < numCols; j++)
@@ -403,7 +457,7 @@ void MainWindow::createButtons()
 			QSizePolicy policy(QSizePolicy::Ignored, QSizePolicy::Expanding);
 			policy.setRetainSizeWhenHidden(true);
 			elem->setSizePolicy(policy);
-			ui->gridLayout->addWidget(elem, i, j);
+			ui->gridLayout->addWidget(elem, i + 1, j + 1);
 			connect(elem, SIGNAL(clicked()), this, SLOT(onClickedPlay()));
 			elem->setContextMenuPolicy(Qt::CustomContextMenu);
 			connect(
@@ -1014,6 +1068,9 @@ void MainWindow::ModelObserver::notify(ConfigModel& model, ConfigModel::notifica
 {
 	switch (what)
 	{
+	case ConfigModel::NOTIFY_RESIZE:
+		p.createButtons();
+		break;
 	case ConfigModel::NOTIFY_SET_ROWS:
 		p.ui->sb_rows->setValue(model.getRows());
 		p.createButtons();

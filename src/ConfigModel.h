@@ -24,6 +24,7 @@ class ConfigModel
 	enum notifications_e
 	{
 		NOTIFY_SET_SOUND,
+		NOTIFY_RESIZE,
 		NOTIFY_SET_ROWS,
 		NOTIFY_SET_COLS,
 		NOTIFY_SET_VOLUME_LOCAL,
@@ -75,6 +76,11 @@ class ConfigModel
 		return m_cols[m_activeConfig];
 	}
 	void setCols(int n);
+
+	void insertCol(int n);
+	void insertRow(int n);
+	void removeCol(int n);
+	void removeRow(int n);
 
 	inline int getVolumeLocal() const
 	{

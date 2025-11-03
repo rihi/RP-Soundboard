@@ -224,6 +224,7 @@ QString ConfigModel::GetFullConfigPath()
 void ConfigModel::setRows(int n)
 {
 	m_rows[m_activeConfig] = n;
+	m_sounds[m_activeConfig].resize(m_rows[m_activeConfig] * m_cols[m_activeConfig]);
 	writeConfig();
 	notify(NOTIFY_SET_ROWS, n);
 }
@@ -231,9 +232,146 @@ void ConfigModel::setRows(int n)
 
 void ConfigModel::setCols(int n)
 {
+	if (n > m_cols[m_activeConfig])
+	{
+		m_sounds[m_activeConfig].resize(m_rows[m_activeConfig] * n);
+		for (int i = m_rows[m_activeConfig] * m_cols[m_activeConfig] - 1; i >= 0; --i) {
+			auto original_row = i / m_cols[m_activeConfig]; 
+			auto original_col = i % m_cols[m_activeConfig];
+			auto new_i = original_row * n + original_col;
+			
+			std::swap(m_sounds[m_activeConfig][i], m_sounds[m_activeConfig][new_i]);
+		}
+	}
+	
 	m_cols[m_activeConfig] = n;
+	m_sounds[m_activeConfig].resize(m_rows[m_activeConfig] * m_cols[m_activeConfig]);
 	writeConfig();
 	notify(NOTIFY_SET_COLS, n);
+}
+
+void ConfigModel::insertCol(int n)
+{
+	auto& rows = m_rows[m_activeConfig];
+	auto& cols = m_cols[m_activeConfig];
+
+	if (n < 0 || n > cols)
+		return;
+	
+	auto& sound_infos = m_sounds[m_activeConfig];
+	std::vector<SoundInfo> new_sounds(static_cast<std::size_t>(rows * (cols + 1)));
+	
+	for (int i = 0; i < rows * cols; i++)
+	{
+		auto old_row = i / cols; 
+		auto old_col = i % cols;
+		auto new_row = old_row;
+		auto new_col = old_col + (old_col < n ? 0 : 1);
+		new_sounds[new_row * (cols + 1) + new_col] = sound_infos[i];
+	}
+
+	sound_infos = std::move(new_sounds);
+	cols += 1;
+	
+	writeConfig();
+	// notify(NOTIFY_RESIZE, n);
+	notify(NOTIFY_SET_COLS, n);
+}
+
+void ConfigModel::insertRow(int n)
+{
+	auto& rows = m_rows[m_activeConfig];
+	auto& cols = m_cols[m_activeConfig];
+
+	if (n < 0 || n > rows)
+		return;
+	
+	auto& sound_infos = m_sounds[m_activeConfig];
+	std::vector<SoundInfo> new_sounds(static_cast<std::size_t>((rows + 1) * cols));
+	
+	for (int i = 0; i < rows * cols; i++)
+	{
+		auto old_row = i / cols; 
+		auto old_col = i % cols;
+		auto new_row = old_row + (old_row < n ? 0 : 1);
+		auto new_col = old_col;
+		new_sounds[new_row * cols + new_col] = sound_infos[i];
+	}
+
+	sound_infos = std::move(new_sounds);
+	rows += 1;
+	
+	writeConfig();
+	// notify(NOTIFY_RESIZE, n);
+	notify(NOTIFY_SET_ROWS, n);
+}
+
+void ConfigModel::removeCol(int n)
+{
+	auto& rows = m_rows[m_activeConfig];
+	auto& cols = m_cols[m_activeConfig];
+
+	if (cols <= 1)
+		return;
+	if (n < 0 || n >= cols)
+		return;
+	
+	auto& sound_infos = m_sounds[m_activeConfig];
+	std::vector<SoundInfo> new_sounds(static_cast<std::size_t>(rows * (cols - 1)));
+	
+	for (int i = 0; i < rows * cols; i++)
+	{
+		auto old_row = i / cols; 
+		auto old_col = i % cols;
+
+		if (old_col == n)
+			continue;
+		
+		auto new_row = old_row;
+		auto new_col = old_col - (old_col < n ? 0 : 1);
+		new_sounds[new_row * (cols - 1) + new_col] = sound_infos[i];
+	}
+
+	sound_infos = std::move(new_sounds);
+	cols -= 1;
+	
+	writeConfig();
+	// notify(NOTIFY_RESIZE, n);
+	notify(NOTIFY_SET_COLS, n);
+}
+
+void ConfigModel::removeRow(int n)
+{
+	auto& rows = m_rows[m_activeConfig];
+	auto& cols = m_cols[m_activeConfig];
+
+	if (rows <= 1)
+		return;
+	if (n < 0 || n >= rows)
+		return;
+	
+	auto& sound_infos = m_sounds[m_activeConfig];
+	std::vector<SoundInfo> new_sounds(static_cast<std::size_t>((rows - 1) * cols));
+	
+	for (int i = 0; i < rows * cols; i++)
+	{
+		auto old_row = i / cols; 
+		auto old_col = i % cols;
+		
+		if (old_row == n)
+			continue;
+		
+		auto new_row = old_row - (old_row < n ? 0 : 1);
+		auto new_col = old_col;
+		new_sounds[new_row * cols + new_col] = sound_infos[i];
+	}
+
+	sound_infos = std::move(new_sounds);
+	rows -= 1;
+	
+	writeConfig();
+	// notify(NOTIFY_RESIZE, n);
+	notify(NOTIFY_SET_ROWS, n);
 }
 
 
