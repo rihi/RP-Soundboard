@@ -207,8 +207,6 @@ MainWindow::MainWindow(ConfigModel* model, QWidget* parent /*= 0*/) :
 	connect(ui->sl_volumeLocal, SIGNAL(valueChanged(int)), this, SLOT(onUpdateVolumeLocal(int)));
 	connect(ui->sl_volumeRemote, SIGNAL(valueChanged(int)), this, SLOT(onUpdateVolumeRemote(int)));
 	connect(ui->cb_mute_locally, SIGNAL(clicked(bool)), this, SLOT(onUpdateMuteLocally(bool)));
-	connect(ui->sb_rows, SIGNAL(valueChanged(int)), this, SLOT(onUpdateRows(int)));
-	connect(ui->sb_cols, SIGNAL(valueChanged(int)), this, SLOT(onUpdateCols(int)));
 	connect(ui->cb_mute_myself, SIGNAL(clicked(bool)), this, SLOT(onUpdateMuteMyself(bool)));
 	connect(ui->cb_show_hotkeys_on_buttons, SIGNAL(clicked(bool)), this, SLOT(onUpdateShowHotkeysOnButtons(bool)));
 	connect(ui->cb_disable_hotkeys, SIGNAL(clicked(bool)), this, SLOT(onUpdateHotkeysDisabled(bool)));
@@ -362,18 +360,6 @@ void MainWindow::onUpdateVolumeRemote(int val)
 void MainWindow::onUpdateMuteLocally(bool val)
 {
 	m_model->setPlaybackLocal(!val);
-}
-
-
-void MainWindow::onUpdateCols(int val)
-{
-	m_model->setCols(val);
-}
-
-
-void MainWindow::onUpdateRows(int val)
-{
-	m_model->setRows(val);
 }
 
 
@@ -668,21 +654,6 @@ void MainWindow::createBubbles()
 		connect(m_stopBubble, &SpeechBubble::closePressed, [this]() {
 			m_model->setBubbleStopBuild(buildinfo_getBuildNumber());
 			m_stopBubble = nullptr;
-		});
-	}
-
-	if (m_model->getBubbleColsBuild() == 0)
-	{
-		settingsSection->setExpanded(true);
-		m_colsBubble = new SpeechBubble(this);
-		m_colsBubble->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-		m_colsBubble->setFixedSize(250, 80);
-		m_colsBubble->setText("Change the number of buttons on the soundboard.");
-		m_colsBubble->attachTo(ui->sb_cols);
-		m_colsBubble->setTempHidden(true);
-		connect(m_colsBubble, &SpeechBubble::closePressed, [this]() {
-			m_model->setBubbleColsBuild(buildinfo_getBuildNumber());
-			m_colsBubble = nullptr;
 		});
 	}
 }
@@ -1069,14 +1040,6 @@ void MainWindow::ModelObserver::notify(ConfigModel& model, ConfigModel::notifica
 	switch (what)
 	{
 	case ConfigModel::NOTIFY_RESIZE:
-		p.createButtons();
-		break;
-	case ConfigModel::NOTIFY_SET_ROWS:
-		p.ui->sb_rows->setValue(model.getRows());
-		p.createButtons();
-		break;
-	case ConfigModel::NOTIFY_SET_COLS:
-		p.ui->sb_cols->setValue(model.getCols());
 		p.createButtons();
 		break;
 	case ConfigModel::NOTIFY_SET_VOLUME_LOCAL:

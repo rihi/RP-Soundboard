@@ -375,7 +375,6 @@ void sb_resetFirstTimeUsage()
 		return;
 	configModel->setBubbleButtonsBuild(0);
 	configModel->setBubbleStopBuild(0);
-	configModel->setBubbleColsBuild(0);
 	QMessageBox::information(
 		nullptr, "RP Soundboard", "First-time usage reset. Restart Teamspeak to see help stuff again."
 	);

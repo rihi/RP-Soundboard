@@ -31,7 +31,6 @@ ConfigModel::ConfigModel()
 
 	m_bubbleButtonsBuild = 0;
 	m_bubbleStopBuild = 0;
-	m_bubbleColsBuild = 0;
 
 	m_showHotkeysOnButtons = false;
 	m_hotkeysEnabled = true;
@@ -73,7 +72,6 @@ void ConfigModel::readConfig(const QString& file)
 	m_windowHeight = settings.value("window_height", 240).toInt();
 	m_bubbleButtonsBuild = settings.value("bubble_buttons_build", 0).toInt();
 	m_bubbleStopBuild = settings.value("bubble_stop_build", 0).toInt();
-	m_bubbleColsBuild = settings.value("bubble_cols_build", 0).toInt();
 	m_showHotkeysOnButtons = settings.value("show_hotkeys_on_buttons", false).toBool();
 	m_hotkeysEnabled = settings.value("hotkeys_enabled", true).toBool();
 	m_nextUpdateCheck = settings.value("next_update_check", 0).toUInt();
@@ -101,7 +99,6 @@ void ConfigModel::writeConfig(const QString& file)
 	settings.setValue("window_height", m_windowHeight);
 	settings.setValue("bubble_buttons_build", m_bubbleButtonsBuild);
 	settings.setValue("bubble_stop_build", m_bubbleStopBuild);
-	settings.setValue("bubble_cols_build", m_bubbleColsBuild);
 	settings.setValue("show_hotkeys_on_buttons", m_showHotkeysOnButtons);
 	settings.setValue("hotkeys_enabled", m_hotkeysEnabled);
 	settings.setValue("next_update_check", m_nextUpdateCheck);
@@ -221,35 +218,6 @@ QString ConfigModel::GetFullConfigPath()
 }
 
 
-void ConfigModel::setRows(int n)
-{
-	m_rows[m_activeConfig] = n;
-	m_sounds[m_activeConfig].resize(m_rows[m_activeConfig] * m_cols[m_activeConfig]);
-	writeConfig();
-	notify(NOTIFY_SET_ROWS, n);
-}
-
-
-void ConfigModel::setCols(int n)
-{
-	if (n > m_cols[m_activeConfig])
-	{
-		m_sounds[m_activeConfig].resize(m_rows[m_activeConfig] * n);
-		for (int i = m_rows[m_activeConfig] * m_cols[m_activeConfig] - 1; i >= 0; --i) {
-			auto original_row = i / m_cols[m_activeConfig]; 
-			auto original_col = i % m_cols[m_activeConfig];
-			auto new_i = original_row * n + original_col;
-			
-			std::swap(m_sounds[m_activeConfig][i], m_sounds[m_activeConfig][new_i]);
-		}
-	}
-	
-	m_cols[m_activeConfig] = n;
-	m_sounds[m_activeConfig].resize(m_rows[m_activeConfig] * m_cols[m_activeConfig]);
-	writeConfig();
-	notify(NOTIFY_SET_COLS, n);
-}
-
 void ConfigModel::insertCol(int n)
 {
 	auto& rows = m_rows[m_activeConfig];
@@ -274,8 +242,7 @@ void ConfigModel::insertCol(int n)
 	cols += 1;
 	
 	writeConfig();
-	// notify(NOTIFY_RESIZE, n);
-	notify(NOTIFY_SET_COLS, n);
+	notify(NOTIFY_RESIZE, n);
 }
 
 void ConfigModel::insertRow(int n)
@@ -302,8 +269,7 @@ void ConfigModel::insertRow(int n)
 	rows += 1;
 	
 	writeConfig();
-	// notify(NOTIFY_RESIZE, n);
-	notify(NOTIFY_SET_ROWS, n);
+	notify(NOTIFY_RESIZE, n);
 }
 
 void ConfigModel::removeCol(int n)
@@ -336,8 +302,7 @@ void ConfigModel::removeCol(int n)
 	cols -= 1;
 	
 	writeConfig();
-	// notify(NOTIFY_RESIZE, n);
-	notify(NOTIFY_SET_COLS, n);
+	notify(NOTIFY_RESIZE, n);
 }
 
 void ConfigModel::removeRow(int n)
@@ -370,8 +335,7 @@ void ConfigModel::removeRow(int n)
 	rows -= 1;
 	
 	writeConfig();
-	// notify(NOTIFY_RESIZE, n);
-	notify(NOTIFY_SET_ROWS, n);
+	notify(NOTIFY_RESIZE, n);
 }
 
 
@@ -470,14 +434,9 @@ void ConfigModel::setBubbleStopBuild(int build)
 }
 
 
-void ConfigModel::setBubbleColsBuild(int build)
-{
-	m_bubbleColsBuild = build;
-	writeConfig();
-	notify(NOTIFY_SET_BUBBLE_COLS_BUILD, build);
-}
-
-
+//---------------------------------------------------------------
+// Purpose: 
+//---------------------------------------------------------------
 std::vector<SoundInfo> ConfigModel::getInitialSounds()
 {
 	char pluginPath[PATH_BUFSIZE];
@@ -508,8 +467,7 @@ void ConfigModel::notifyAllEvents()
 	// Notify all changes
 	for (int i = 0; i < numSounds(); i++)
 		notify(NOTIFY_SET_SOUND, i);
-	notify(NOTIFY_SET_COLS, getCols());
-	notify(NOTIFY_SET_ROWS, getRows());
+	notify(NOTIFY_RESIZE, 0);
 	notify(NOTIFY_SET_VOLUME_LOCAL, m_volumeLocal);
 	notify(NOTIFY_SET_VOLUME_REMOTE, m_volumeRemote);
 	notify(NOTIFY_SET_PLAYBACK_LOCAL, m_playbackLocal);
@@ -517,7 +475,6 @@ void ConfigModel::notifyAllEvents()
 	notify(NOTIFY_SET_WINDOW_SIZE, 0);
 	notify(NOTIFY_SET_BUBBLE_BUTTONS_BUILD, m_bubbleButtonsBuild);
 	notify(NOTIFY_SET_BUBBLE_STOP_BUILD, m_bubbleStopBuild);
-	notify(NOTIFY_SET_BUBBLE_COLS_BUILD, m_bubbleColsBuild);
 	notify(NOTIFY_SET_SHOW_HOTKEYS_ON_BUTTONS, m_showHotkeysOnButtons);
 	notify(NOTIFY_SET_HOTKEYS_ENABLED, m_hotkeysEnabled);
 	notify(NOTIFY_SET_THEME_MODE, static_cast<int>(m_themeMode));

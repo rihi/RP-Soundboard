@@ -66,8 +66,6 @@ class MainWindow : public QWidget
 	void onUpdateVolumeLocal(int val);
 	void onUpdateVolumeRemote(int val);
 	void onUpdateMuteLocally(bool val);
-	void onUpdateCols(int val);
-	void onUpdateRows(int val);
 	void onUpdateMuteMyself(bool val);
 	void showButtonContextMenu(const QPoint& point);
 	void showStopButtonContextMenu(const QPoint& point);

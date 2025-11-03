@@ -25,8 +25,6 @@ class ConfigModel
 	{
 		NOTIFY_SET_SOUND,
 		NOTIFY_RESIZE,
-		NOTIFY_SET_ROWS,
-		NOTIFY_SET_COLS,
 		NOTIFY_SET_VOLUME_LOCAL,
 		NOTIFY_SET_VOLUME_REMOTE,
 		NOTIFY_SET_PLAYBACK_LOCAL,
@@ -34,7 +32,6 @@ class ConfigModel
 		NOTIFY_SET_WINDOW_SIZE,
 		NOTIFY_SET_BUBBLE_BUTTONS_BUILD,
 		NOTIFY_SET_BUBBLE_STOP_BUILD,
-		NOTIFY_SET_BUBBLE_COLS_BUILD,
 		NOTIFY_SET_SHOW_HOTKEYS_ON_BUTTONS,
 		NOTIFY_SET_HOTKEYS_ENABLED,
 		NOTIFY_SET_NEXT_UPDATE_CHECK,
@@ -69,13 +66,10 @@ class ConfigModel
 	{
 		return m_rows[m_activeConfig];
 	}
-	void setRows(int n);
-
 	inline int getCols() const
 	{
 		return m_cols[m_activeConfig];
 	}
-	void setCols(int n);
 
 	void insertCol(int n);
 	void insertRow(int n);
@@ -121,16 +115,7 @@ class ConfigModel
 	}
 	void setBubbleStopBuild(int build);
 
-	inline int getBubbleColsBuild() const
-	{
-		return m_bubbleColsBuild;
-	}
-	void setBubbleColsBuild(int build);
-
-	inline bool getShowHotkeysOnButtons() const
-	{
-		return m_showHotkeysOnButtons;
-	}
+	inline bool getShowHotkeysOnButtons() const { return m_showHotkeysOnButtons; }
 	void setShowHotkeysOnButtons(bool show);
 
 	inline bool getHotkeysEnabled() const
@@ -191,7 +176,6 @@ class ConfigModel
 
 	int m_bubbleButtonsBuild;
 	int m_bubbleStopBuild;
-	int m_bubbleColsBuild;
 
 	bool m_showHotkeysOnButtons;
 	bool m_hotkeysEnabled;
