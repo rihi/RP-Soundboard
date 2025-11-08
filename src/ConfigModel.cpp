@@ -22,8 +22,9 @@ ConfigModel::ConfigModel()
 {
 	m_rows.fill(2);
 	m_cols.fill(5);
-	m_volumeLocal = 80;
-	m_volumeRemote = 80;
+	m_volumeMaster = 100;
+	m_volumeLocal = 100;
+	m_volumeRemote = 100;
 	m_playbackLocal = true;
 	m_muteMyselfDuringPb = false;
 	m_windowWidth = 600;
@@ -66,7 +67,8 @@ void ConfigModel::readConfig(const QString& file)
 		// just to be sure the vector is of the correct size
 		m_sounds[i].resize(m_rows[i] * m_cols[i]);
 	}
-	int volume_old = settings.value("volume", 50).toInt();
+	int volume_old = settings.value("volume", 100).toInt();
+	m_volumeMaster = settings.value("volumeMaster", volume_old).toInt();
 	m_volumeLocal = settings.value("volumeLocal", volume_old).toInt();
 	m_volumeRemote = settings.value("volumeRemote", volume_old).toInt();
 	m_playbackLocal = settings.value("playback_local", true).toBool();
@@ -94,15 +96,16 @@ void ConfigModel::writeConfig(const QString& file)
 	QSettings settings(path, QSettings::IniFormat);
 
 	settings.setValue("config_build", buildinfo_getBuildNumber());
-	settings.setValue("volumeLocal", m_volumeLocal);
-	settings.setValue("volumeRemote", m_volumeRemote);
-	settings.setValue("playback_local", m_playbackLocal);
-	settings.setValue("mute_myself_during_pb", m_muteMyselfDuringPb);
-	settings.setValue("window_width", m_windowWidth);
-	settings.setValue("window_height", m_windowHeight);
-	settings.setValue("bubble_buttons_build", m_bubbleButtonsBuild);
-	settings.setValue("bubble_stop_build", m_bubbleStopBuild);
-	settings.setValue("show_hotkeys_on_buttons", m_showHotkeysOnButtons);
+	settings.setValue("volumeMaster", m_volumeMaster);
+    settings.setValue("volumeLocal", m_volumeLocal);
+    settings.setValue("volumeRemote", m_volumeRemote);
+    settings.setValue("playback_local", m_playbackLocal);
+    settings.setValue("mute_myself_during_pb", m_muteMyselfDuringPb);
+    settings.setValue("window_width", m_windowWidth);
+    settings.setValue("window_height", m_windowHeight);
+    settings.setValue("bubble_buttons_build", m_bubbleButtonsBuild);
+    settings.setValue("bubble_stop_build", m_bubbleStopBuild);
+    settings.setValue("show_hotkeys_on_buttons", m_showHotkeysOnButtons);
 	settings.setValue("hotkeys_enabled", m_hotkeysEnabled);
 	settings.setValue("next_update_check", m_nextUpdateCheck);
 	settings.setValue("theme_mode", themeModeToString(m_themeMode));
@@ -341,6 +344,12 @@ void ConfigModel::removeRow(int n)
 	notify(NOTIFY_RESIZE, n);
 }
 
+void ConfigModel::setVolumeMaster(int val)
+{
+	m_volumeMaster = val;
+	notify(NOTIFY_SET_VOLUME_MASTER, val);
+}
+
 
 void ConfigModel::setVolumeLocal(int val)
 {
@@ -471,6 +480,7 @@ void ConfigModel::notifyAllEvents()
 	for (int i = 0; i < numSounds(); i++)
 		notify(NOTIFY_SET_SOUND, i);
 	notify(NOTIFY_RESIZE, 0);
+	notify(NOTIFY_SET_VOLUME_MASTER, m_volumeMaster);
 	notify(NOTIFY_SET_VOLUME_LOCAL, m_volumeLocal);
 	notify(NOTIFY_SET_VOLUME_REMOTE, m_volumeRemote);
 	notify(NOTIFY_SET_PLAYBACK_LOCAL, m_playbackLocal);

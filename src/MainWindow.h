@@ -63,6 +63,7 @@ class MainWindow : public QWidget
   private slots:
 	void onClickedPlay();
 	void onClickedStop();
+	void onUpdateVolumeMaster(int val);
 	void onUpdateVolumeLocal(int val);
 	void onUpdateVolumeRemote(int val);
 	void onUpdateMuteLocally(bool val);
@@ -81,6 +82,7 @@ class MainWindow : public QWidget
 	void onButtonPausePressed();
 	void onButtonDroppedOnButton(SoundButton* button);
 	void onFilterEditTextChanged(const QString& filter);
+	void onVolumeSliderContextMenuMaster(const QPoint& point);
 	void onVolumeSliderContextMenuLocal(const QPoint& point);
 	void onVolumeSliderContextMenuRemote(const QPoint& point);
 

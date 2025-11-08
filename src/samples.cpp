@@ -49,6 +49,7 @@ Sampler::Sampler() :
 	m_peakMeterCapture(0.01f, 0.00005f, 24000),
 	m_peakMeterPlayback(0.01f, 0.00005f, 24000),
 	m_volumeDivider(1),
+	m_globalDbSettingMaster(-1.0),
 	m_globalDbSettingLocal(-1.0),
 	m_globalDbSettingRemote(-1.0),
 	m_soundDbSetting(0.0),
@@ -184,7 +185,7 @@ int Sampler::fetchInputSamples(short* samples, int count, int channels, bool* fi
 {
 	std::lock_guard<std::mutex> Lock(m_mutex);
 
-	setVolumeDb(m_globalDbSettingRemote + m_soundDbSetting);
+	setVolumeDb(m_globalDbSettingMaster + m_globalDbSettingRemote + m_soundDbSetting);
 	int written =
 		fetchSamples(m_sbCapture, m_peakMeterCapture, samples, count, channels, true, 0, 1, m_muteMyself, m_muteMyself);
 
@@ -214,7 +215,7 @@ int Sampler::fetchOutputSamples(
 	const unsigned int bitMaskRight = SPEAKER_FRONT_RIGHT | SPEAKER_HEADPHONES_RIGHT;
 	int ciLeft = findChannelId(bitMaskLeft, channelSpeakerArray, channels);
 	int ciRight = findChannelId(bitMaskRight, channelSpeakerArray, channels);
-	setVolumeDb(m_globalDbSettingLocal + m_soundDbSetting);
+	setVolumeDb(m_globalDbSettingMaster + m_globalDbSettingLocal + m_soundDbSetting);
 	int written = fetchSamples(
 		m_sbPlayback, m_peakMeterPlayback, samples, count, channels, true, ciLeft, ciRight,
 		(*channelFillMask & bitMaskLeft) == 0, (*channelFillMask & bitMaskRight) == 0
@@ -257,6 +258,16 @@ void Sampler::stopPlayback()
 
 #define VOLUMESCALER_EXPONENT 1.0
 #define VOLUMESCALER_DB_MIN -28.0
+
+void Sampler::setVolumeMaster(int vol)
+{
+	double v = (double)vol / 100.0;
+	double db = pow(1.0 - v, VOLUMESCALER_EXPONENT) * VOLUMESCALER_DB_MIN;
+	m_globalDbSettingMaster = db;
+	setVolumeDb(m_globalDbSettingMaster + m_soundDbSetting);
+}
+
+
 void Sampler::setVolumeRemote(int vol)
 {
 	double v = (double)vol / 100.0;
@@ -333,7 +344,7 @@ bool Sampler::playSoundInternal(const SoundInfo& sound, bool preview)
 	}
 
 	m_soundDbSetting = (double)sound.volume;
-	setVolumeDb(m_globalDbSettingLocal + m_soundDbSetting);
+	setVolumeDb(m_globalDbSettingMaster + m_globalDbSettingLocal + m_soundDbSetting);
 
 	SampleBuffer::Lock sblc(m_sbCapture.getMutex());
 	SampleBuffer::Lock sblp(m_sbPlayback.getMutex());

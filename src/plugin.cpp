@@ -325,7 +325,7 @@ extern "C"
 		 * The description is shown in the clients hotkey dialog. */
 		int i;
 		int numKeys = 200;
-		int numExtra = NUM_CONFIGS + 6;
+		int numExtra = NUM_CONFIGS + 10;
 		char kw[PLUGIN_HOTKEY_BUFSZ];
 		char desc[PLUGIN_HOTKEY_BUFSZ];
 
@@ -348,8 +348,12 @@ extern "C"
 		CREATE_HOTKEY(HOTKEY_PAUSE_ALL, "Pause/unpause sound");
 		CREATE_HOTKEY(HOTKEY_MUTE_MYSELF, "Toggle 'Mute myself during playback'");
 		CREATE_HOTKEY(HOTKEY_MUTE_ON_MY_CLIENT, "Toggle 'Mute on my client'");
-		CREATE_HOTKEY(HOTKEY_VOLUME_INCREASE, "Increase volume by 20%");
-		CREATE_HOTKEY(HOTKEY_VOLUME_DECREASE, "Decrease volume by 20%");
+		CREATE_HOTKEY(HOTKEY_VOLUME_INCREASE_MASTER, "Increase master volume by 10%");
+		CREATE_HOTKEY(HOTKEY_VOLUME_INCREASE_LOCAL, "Increase local volume by 10%");
+		CREATE_HOTKEY(HOTKEY_VOLUME_INCREASE_REMOTE, "Increase remote volume by 10%");
+		CREATE_HOTKEY(HOTKEY_VOLUME_DECREASE_MASTER, "Decrease master volume by 10%");
+		CREATE_HOTKEY(HOTKEY_VOLUME_DECREASE_LOCAL, "Decrease local volume by 10%");
+		CREATE_HOTKEY(HOTKEY_VOLUME_DECREASE_REMOTE, "Decrease remote volume by 10%");
 		END_CREATE_HOTKEYS;
 
 		/* The client will call ts3plugin_freeMemory to release all allocated memory */

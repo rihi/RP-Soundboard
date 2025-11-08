@@ -46,6 +46,7 @@ class Sampler : public QObject
 	bool playFile(const SoundInfo& sound);
 	bool playPreview(const SoundInfo& sound);
 	void stopPlayback();
+	void setVolumeMaster(int vol);
 	void setVolumeLocal(int vol);
 	void setVolumeRemote(int vol);
 	void setLocalPlayback(bool enabled);
@@ -87,6 +88,7 @@ class Sampler : public QObject
 	int m_volumeDivider;
 	float m_volumeFactor;
 	static const int volumeScaleExp = 12;
+	double m_globalDbSettingMaster;
 	double m_globalDbSettingLocal;
 	double m_globalDbSettingRemote;
 	double m_soundDbSetting;

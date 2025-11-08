@@ -25,6 +25,7 @@ class ConfigModel
 	{
 		NOTIFY_SET_SOUND,
 		NOTIFY_RESIZE,
+		NOTIFY_SET_VOLUME_MASTER,
 		NOTIFY_SET_VOLUME_LOCAL,
 		NOTIFY_SET_VOLUME_REMOTE,
 		NOTIFY_SET_PLAYBACK_LOCAL,
@@ -75,6 +76,12 @@ class ConfigModel
 	void insertRow(int n);
 	void removeCol(int n);
 	void removeRow(int n);
+
+	inline int getVolumeMaster() const
+	{
+		return m_volumeMaster;
+	}
+	void setVolumeMaster(int val);
 
 	inline int getVolumeLocal() const
 	{
@@ -167,6 +174,7 @@ class ConfigModel
 
 	std::array<int, NUM_CONFIGS> m_rows;
 	std::array<int, NUM_CONFIGS> m_cols;
+	int m_volumeMaster;
 	int m_volumeLocal;
 	int m_volumeRemote;
 	bool m_playbackLocal;

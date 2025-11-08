@@ -61,6 +61,9 @@ void ModelObserver_Prog::notify(ConfigModel& model, ConfigModel::notifications_e
 {
 	switch (what)
 	{
+	case ConfigModel::NOTIFY_SET_VOLUME_MASTER:
+		sampler->setVolumeMaster(data);
+		break;
 	case ConfigModel::NOTIFY_SET_VOLUME_LOCAL:
 		sampler->setVolumeLocal(data);
 		break;
@@ -348,15 +351,29 @@ void sb_onHotkeyPressed(const char* keyword)
 	{
 		configModel->setPlaybackLocal(!configModel->getPlaybackLocal());
 	}
-	else if (strcmp(keyword, HOTKEY_VOLUME_INCREASE) == 0)
+	else if (strcmp(keyword, HOTKEY_VOLUME_INCREASE_MASTER) == 0)
 	{
-		configModel->setVolumeRemote(std::min(configModel->getVolumeRemote() + 20, 100));
-		configModel->setVolumeLocal(std::min(configModel->getVolumeLocal() + 20, 100));
+		configModel->setVolumeMaster(std::min(configModel->getVolumeMaster() + 10, 120));
 	}
-	else if (strcmp(keyword, HOTKEY_VOLUME_DECREASE) == 0)
+	else if (strcmp(keyword, HOTKEY_VOLUME_DECREASE_MASTER) == 0)
 	{
-		configModel->setVolumeRemote(std::max(configModel->getVolumeRemote() - 20, 0));
-		configModel->setVolumeLocal(std::max(configModel->getVolumeLocal() - 20, 0));
+		configModel->setVolumeMaster(std::max(configModel->getVolumeMaster() - 10, 0));
+	}
+	else if (strcmp(keyword, HOTKEY_VOLUME_INCREASE_LOCAL) == 0)
+	{
+		configModel->setVolumeLocal(std::min(configModel->getVolumeLocal() + 10, 120));
+	}
+	else if (strcmp(keyword, HOTKEY_VOLUME_DECREASE_LOCAL) == 0)
+	{
+		configModel->setVolumeLocal(std::max(configModel->getVolumeLocal() - 10, 0));
+	}
+	else if (strcmp(keyword, HOTKEY_VOLUME_INCREASE_REMOTE) == 0)
+	{
+		configModel->setVolumeRemote(std::min(configModel->getVolumeRemote() + 10, 120));
+	}
+	else if (strcmp(keyword, HOTKEY_VOLUME_DECREASE_REMOTE) == 0)
+	{
+		configModel->setVolumeRemote(std::max(configModel->getVolumeRemote() - 10, 0));
 	}
 }
 
