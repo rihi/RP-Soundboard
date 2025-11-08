@@ -262,7 +262,7 @@ void Sampler::stopPlayback()
 void Sampler::setVolumeMaster(int vol)
 {
 	double v = (double)vol / 100.0;
-	double db = pow(1.0 - v, VOLUMESCALER_EXPONENT) * VOLUMESCALER_DB_MIN;
+	double db = v == 0 ? -1000 : pow(1.0 - v, VOLUMESCALER_EXPONENT) * VOLUMESCALER_DB_MIN;
 	m_globalDbSettingMaster = db;
 	setVolumeDb(m_globalDbSettingMaster + m_soundDbSetting);
 }
@@ -271,7 +271,7 @@ void Sampler::setVolumeMaster(int vol)
 void Sampler::setVolumeRemote(int vol)
 {
 	double v = (double)vol / 100.0;
-	double db = pow(1.0 - v, VOLUMESCALER_EXPONENT) * VOLUMESCALER_DB_MIN;
+	double db = v == 0 ? -1000 : pow(1.0 - v, VOLUMESCALER_EXPONENT) * VOLUMESCALER_DB_MIN;
 	m_globalDbSettingRemote = db;
 	setVolumeDb(m_globalDbSettingRemote + m_soundDbSetting);
 }
@@ -280,7 +280,7 @@ void Sampler::setVolumeRemote(int vol)
 void Sampler::setVolumeLocal(int vol)
 {
 	double v = (double)vol / 100.0;
-	double db = pow(1.0 - v, VOLUMESCALER_EXPONENT) * VOLUMESCALER_DB_MIN;
+	double db = v == 0 ? -1000 : pow(1.0 - v, VOLUMESCALER_EXPONENT) * VOLUMESCALER_DB_MIN;
 	m_globalDbSettingLocal = db;
 	setVolumeDb(m_globalDbSettingLocal + m_soundDbSetting);
 }
