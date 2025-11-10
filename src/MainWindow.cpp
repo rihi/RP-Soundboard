@@ -413,7 +413,19 @@ void MainWindow::createButtons()
 			} else if (selectedAction == addRAction) {
 				m_model->insertCol(col + 1);
 			} else if (selectedAction == removeAction) {
-				m_model->removeCol(col);
+				auto remove = m_model->isColEmpty(col);
+				if (!remove)
+				{
+					auto reply = QMessageBox::question(
+						elem,
+						"Confirm Delete",
+						"Are you sure you want to delete this column? All mapped buttons will be deleted.",
+						QMessageBox::Yes | QMessageBox::Cancel
+					);
+					remove = reply == QMessageBox::Yes; 
+				}
+				if (remove)
+					m_model->removeCol(col);
 			}
 		});
 		ui->gridLayout->addWidget(elem, 0, col + 1);
@@ -438,7 +450,19 @@ void MainWindow::createButtons()
 			} else if (selectedAction == addRAction) {
 				m_model->insertRow(row + 1);
 			} else if (selectedAction == removeAction) {
-				m_model->removeRow(row);
+				auto remove = m_model->isRowEmpty(row);
+				if (!remove)
+				{
+					auto reply = QMessageBox::question(
+						elem,
+						"Confirm Delete",
+						"Are you sure you want to delete this row? All mapped buttons will be deleted.",
+						QMessageBox::Yes | QMessageBox::Cancel
+					);
+					remove = reply == QMessageBox::Yes; 
+				}
+				if (remove)
+					m_model->removeRow(row);
 			}
 		});
 		ui->gridLayout->addWidget(elem, row + 1, 0);

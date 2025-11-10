@@ -76,6 +76,9 @@ class ConfigModel
 	void insertRow(int n);
 	void removeCol(int n);
 	void removeRow(int n);
+	
+	bool isRowEmpty(int n);
+	bool isColEmpty(int n);
 
 	inline int getVolumeMaster() const
 	{

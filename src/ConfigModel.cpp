@@ -344,6 +344,32 @@ void ConfigModel::removeRow(int n)
 	notify(NOTIFY_RESIZE, n);
 }
 
+bool ConfigModel::isRowEmpty(int n)
+{
+	if (n < 0 || n >= getRows())
+		return false;
+	
+	for (auto i = 0; i < getCols(); i += 1)
+	{
+		if (!sounds()[n * getCols() + i].filename.isEmpty())
+			return false;
+	}
+	return true;
+}
+
+bool ConfigModel::isColEmpty(int n)
+{
+	if (n < 0 || n >= getCols())
+		return false;
+	
+	for (auto i = n; i < sounds().size(); i += getCols())
+	{
+		if (!sounds()[i].filename.isEmpty())
+			return false;
+	}
+	return true;
+}
+
 void ConfigModel::setVolumeMaster(int val)
 {
 	m_volumeMaster = val;
