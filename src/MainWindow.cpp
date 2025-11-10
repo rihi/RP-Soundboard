@@ -352,18 +352,21 @@ void MainWindow::onClickedStop()
 void MainWindow::onUpdateVolumeMaster(int val)
 {
 	m_model->setVolumeMaster(val);
+	ui->lbl_volumeMasterValue->setText(QString("%1%").arg(val, 3, 10, QChar(' ')));
 }
 
 
 void MainWindow::onUpdateVolumeLocal(int val)
 {
 	m_model->setVolumeLocal(val);
+	ui->lbl_volumeLocalValue->setText(QString("%1%").arg(val, 3, 10, QChar(' ')));
 }
 
 
 void MainWindow::onUpdateVolumeRemote(int val)
 {
 	m_model->setVolumeRemote(val);
+	ui->lbl_volumeRemoteValue->setText(QString("%1%").arg(val, 3, 10, QChar(' ')));
 }
 
 
