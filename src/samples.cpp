@@ -56,9 +56,6 @@ Sampler::Sampler() :
 	m_state(eSILENT),
 	m_localPlayback(true)
 {
-	/* Ensure resources are loaded */
-	Q_INIT_RESOURCE(qtres);
-
 	assert(m_state.is_lock_free());
 }
 

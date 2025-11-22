@@ -34,13 +34,6 @@
 #include "SoundInfo.h"
 #include "TalkStateManager.h"
 
-class ModelObserver_Prog : public ConfigModel::Observer
-{
-  public:
-	void notify(ConfigModel& model, ConfigModel::notifications_e what, int data) override;
-};
-
-
 static uint64 activeServerId = 1;
 
 ConfigModel* configModel = nullptr;
@@ -51,34 +44,9 @@ TalkStateManager* tsMgr = nullptr;
 
 bool hotkeysTemporarilyDisabled = false;
 
-ModelObserver_Prog* modelObserver = nullptr;
 UpdateChecker* updateChecker = nullptr;
 std::map<uint64, int> connectionStatusMap;
 typedef std::lock_guard<std::mutex> Lock;
-
-
-void ModelObserver_Prog::notify(ConfigModel& model, ConfigModel::notifications_e what, int data)
-{
-	switch (what)
-	{
-	case ConfigModel::NOTIFY_SET_VOLUME_MASTER:
-		sampler->setVolumeMaster(data);
-		break;
-	case ConfigModel::NOTIFY_SET_VOLUME_LOCAL:
-		sampler->setVolumeLocal(data);
-		break;
-	case ConfigModel::NOTIFY_SET_VOLUME_REMOTE:
-		sampler->setVolumeRemote(data);
-		break;
-	case ConfigModel::NOTIFY_SET_PLAYBACK_LOCAL:
-		sampler->setLocalPlayback(model.getPlaybackLocal());
-		break;
-	case ConfigModel::NOTIFY_SET_MUTE_MYSELF_DURING_PB:
-		sampler->setMuteMyself(model.getMuteMyselfDuringPb());
-	default:
-		break;
-	}
-}
 
 
 void sb_handlePlaybackData(
@@ -128,6 +96,9 @@ void sb_init()
 		10,
 		[]
 		{
+			/* Ensure resources are loaded */
+			Q_INIT_RESOURCE(qtres);
+
 			configModel = new ConfigModel();
 			configModel->readConfig();
 
@@ -151,8 +122,11 @@ void sb_init()
 
 			configDialog = new MainWindow(configModel);
 
-			modelObserver = new ModelObserver_Prog();
-			configModel->addObserver(modelObserver);
+			QObject::connect(configModel, &ConfigModel::volumeMasterChanged, [] { sampler->setVolumeMaster(configModel->getVolumeMaster()); });
+			QObject::connect(configModel, &ConfigModel::volumeLocalChanged, [] { sampler->setVolumeLocal(configModel->getVolumeLocal()); });
+			QObject::connect(configModel, &ConfigModel::volumeRemoteChanged, [] { sampler->setVolumeRemote(configModel->getVolumeRemote()); });
+			QObject::connect(configModel, &ConfigModel::playbackLocalChanged, [] { sampler->setLocalPlayback(configModel->getPlaybackLocal()); });
+			QObject::connect(configModel, &ConfigModel::muteMyselfDuringPbChanged, [] { sampler->setMuteMyself(configModel->getMuteMyselfDuringPb()); });
 
 			configModel->notifyAllEvents();
 
@@ -165,10 +139,6 @@ void sb_init()
 
 void sb_kill()
 {
-	configModel->remObserver(modelObserver);
-	delete modelObserver;
-	modelObserver = nullptr;
-
 	sampler->shutdown();
 	delete sampler;
 	sampler = nullptr;

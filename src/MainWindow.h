@@ -114,25 +114,11 @@ class MainWindow : public QWidget
 	QString unescapeCustomText(const QString& text);
 	void applyTheme(ThemeMode mode);
 
-	class ModelObserver : public ConfigModel::Observer
-	{
-	  public:
-		ModelObserver(MainWindow& parent) :
-			p(parent)
-		{
-		}
-		void notify(ConfigModel& model, ConfigModel::notifications_e what, int data) override;
-
-	  private:
-		MainWindow& p;
-	};
-
 	Ui::MainWindow* ui;
 	std::vector<SoundButton*> m_buttons;
 	std::vector<QPushButton*> m_button_controls;
 	ConfigModel* m_model;
 	QBoxLayout* m_configArea;
-	ModelObserver m_modelObserver;
 	QMenu m_buttonContextMenu;
 	QPointer<SpeechBubble> m_buttonBubble;
 	QPointer<SpeechBubble> m_notConnectedBubble;

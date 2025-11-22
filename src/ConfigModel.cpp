@@ -181,7 +181,7 @@ void ConfigModel::setFileName(int itemId, const QString& fn)
 			sounds().resize(itemId + 1);
 		sounds()[itemId].filename = fn;
 		writeConfig();
-		notify(NOTIFY_SET_SOUND, itemId);
+		emit soundChanged(itemId);
 	}
 }
 
@@ -200,7 +200,7 @@ void ConfigModel::setSoundInfo(int itemId, const SoundInfo& info)
 		sounds().resize(itemId + 1);
 	sounds()[itemId] = info;
 	writeConfig();
-	notify(NOTIFY_SET_SOUND, itemId);
+	emit soundChanged(itemId);
 }
 
 
@@ -248,7 +248,7 @@ void ConfigModel::insertCol(int n)
 	cols += 1;
 	
 	writeConfig();
-	notify(NOTIFY_RESIZE, n);
+	emit soundsResized();
 }
 
 void ConfigModel::insertRow(int n)
@@ -275,7 +275,7 @@ void ConfigModel::insertRow(int n)
 	rows += 1;
 	
 	writeConfig();
-	notify(NOTIFY_RESIZE, n);
+	emit soundsResized();
 }
 
 void ConfigModel::removeCol(int n)
@@ -308,7 +308,7 @@ void ConfigModel::removeCol(int n)
 	cols -= 1;
 	
 	writeConfig();
-	notify(NOTIFY_RESIZE, n);
+	emit soundsResized();
 }
 
 void ConfigModel::removeRow(int n)
@@ -341,7 +341,7 @@ void ConfigModel::removeRow(int n)
 	rows -= 1;
 	
 	writeConfig();
-	notify(NOTIFY_RESIZE, n);
+	emit soundsResized();
 }
 
 bool ConfigModel::isRowEmpty(int n)
@@ -373,27 +373,27 @@ bool ConfigModel::isColEmpty(int n)
 void ConfigModel::setVolumeMaster(int val)
 {
 	m_volumeMaster = val;
-	notify(NOTIFY_SET_VOLUME_MASTER, val);
+	emit volumeMasterChanged();
 }
 
 
 void ConfigModel::setVolumeLocal(int val)
 {
 	m_volumeLocal = val;
-	notify(NOTIFY_SET_VOLUME_LOCAL, val);
+	emit volumeLocalChanged();
 }
 
 void ConfigModel::setVolumeRemote(int val)
 {
 	m_volumeRemote = val;
-	notify(NOTIFY_SET_VOLUME_REMOTE, val);
+	emit volumeRemoteChanged();
 }
 
 void ConfigModel::setPlaybackLocal(bool val)
 {
 	m_playbackLocal = val;
 	writeConfig();
-	notify(NOTIFY_SET_PLAYBACK_LOCAL, val ? 1 : 0);
+	emit playbackLocalChanged();
 }
 
 
@@ -401,7 +401,7 @@ void ConfigModel::setMuteMyselfDuringPb(bool val)
 {
 	m_muteMyselfDuringPb = val;
 	writeConfig();
-	notify(NOTIFY_SET_MUTE_MYSELF_DURING_PB, val ? 1 : 0);
+	emit muteMyselfDuringPbChanged();
 }
 
 
@@ -418,21 +418,13 @@ void ConfigModel::setWindowSize(int width, int height)
 {
 	m_windowWidth = width;
 	m_windowHeight = height;
-	notify(NOTIFY_SET_WINDOW_SIZE, 0);
+	emit windowSizeChanged();
 }
 
 
 void ConfigModel::setNextUpdateCheck(uint time)
 {
 	m_nextUpdateCheck = time;
-	notify(NOTIFY_SET_NEXT_UPDATE_CHECK, (int)time);
-}
-
-
-void ConfigModel::notify(notifications_e what, int data)
-{
-	for (Observer* obs : m_obs)
-		obs->notify(*this, what, data);
 }
 
 
@@ -440,19 +432,7 @@ void ConfigModel::setHotkeysEnabled(bool enabled)
 {
 	m_hotkeysEnabled = enabled;
 	writeConfig();
-	notify(NOTIFY_SET_HOTKEYS_ENABLED, enabled ? 1 : 0);
-}
-
-
-void ConfigModel::addObserver(Observer* obs)
-{
-	m_obs.push_back(obs);
-}
-
-
-void ConfigModel::remObserver(Observer* obs)
-{
-	m_obs.erase(std::remove(m_obs.begin(), m_obs.end(), obs), m_obs.end());
+	emit hotkeysEnabledChanged();
 }
 
 
@@ -460,7 +440,6 @@ void ConfigModel::setBubbleButtonsBuild(int build)
 {
 	m_bubbleButtonsBuild = build;
 	writeConfig();
-	notify(NOTIFY_SET_BUBBLE_BUTTONS_BUILD, build);
 }
 
 
@@ -468,7 +447,6 @@ void ConfigModel::setBubbleStopBuild(int build)
 {
 	m_bubbleStopBuild = build;
 	writeConfig();
-	notify(NOTIFY_SET_BUBBLE_STOP_BUILD, build);
 }
 
 
@@ -504,19 +482,17 @@ void ConfigModel::notifyAllEvents()
 {
 	// Notify all changes
 	for (int i = 0; i < numSounds(); i++)
-		notify(NOTIFY_SET_SOUND, i);
-	notify(NOTIFY_RESIZE, 0);
-	notify(NOTIFY_SET_VOLUME_MASTER, m_volumeMaster);
-	notify(NOTIFY_SET_VOLUME_LOCAL, m_volumeLocal);
-	notify(NOTIFY_SET_VOLUME_REMOTE, m_volumeRemote);
-	notify(NOTIFY_SET_PLAYBACK_LOCAL, m_playbackLocal);
-	notify(NOTIFY_SET_MUTE_MYSELF_DURING_PB, m_muteMyselfDuringPb);
-	notify(NOTIFY_SET_WINDOW_SIZE, 0);
-	notify(NOTIFY_SET_BUBBLE_BUTTONS_BUILD, m_bubbleButtonsBuild);
-	notify(NOTIFY_SET_BUBBLE_STOP_BUILD, m_bubbleStopBuild);
-	notify(NOTIFY_SET_SHOW_HOTKEYS_ON_BUTTONS, m_showHotkeysOnButtons);
-	notify(NOTIFY_SET_HOTKEYS_ENABLED, m_hotkeysEnabled);
-	notify(NOTIFY_SET_THEME_MODE, static_cast<int>(m_themeMode));
+		emit soundChanged(i);
+	emit soundsResized();
+	emit volumeMasterChanged();
+	emit volumeLocalChanged();
+	emit volumeRemoteChanged();
+	emit playbackLocalChanged();
+	emit muteMyselfDuringPbChanged();
+	emit windowSizeChanged();
+	emit showHotkeysOnButtonsChanged();
+	emit hotkeysEnabledChanged();
+	emit themeModeChanged();
 }
 
 
@@ -524,7 +500,7 @@ void ConfigModel::setShowHotkeysOnButtons(bool show)
 {
 	m_showHotkeysOnButtons = show;
 	writeConfig();
-	notify(NOTIFY_SET_SHOW_HOTKEYS_ON_BUTTONS, show ? 1 : 0);
+	emit showHotkeysOnButtonsChanged();
 }
 
 
@@ -532,5 +508,5 @@ void ConfigModel::setThemeMode(ThemeMode mode)
 {
 	m_themeMode = mode;
 	writeConfig();
-	notify(NOTIFY_SET_THEME_MODE, static_cast<int>(mode));
+	emit themeModeChanged();
 }

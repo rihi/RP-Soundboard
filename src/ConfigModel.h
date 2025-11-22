@@ -18,33 +18,26 @@
 #include <set>
 #include "common.h"
 
-class ConfigModel
+class ConfigModel : public QObject
 {
-  public:
-	enum notifications_e
-	{
-		NOTIFY_SET_SOUND,
-		NOTIFY_RESIZE,
-		NOTIFY_SET_VOLUME_MASTER,
-		NOTIFY_SET_VOLUME_LOCAL,
-		NOTIFY_SET_VOLUME_REMOTE,
-		NOTIFY_SET_PLAYBACK_LOCAL,
-		NOTIFY_SET_MUTE_MYSELF_DURING_PB,
-		NOTIFY_SET_WINDOW_SIZE,
-		NOTIFY_SET_BUBBLE_BUTTONS_BUILD,
-		NOTIFY_SET_BUBBLE_STOP_BUILD,
-		NOTIFY_SET_SHOW_HOTKEYS_ON_BUTTONS,
-		NOTIFY_SET_HOTKEYS_ENABLED,
-		NOTIFY_SET_NEXT_UPDATE_CHECK,
-		NOTIFY_SET_THEME_MODE,
-	};
-
-	class Observer
-	{
-	  public:
-		virtual ~Observer() {}
-		virtual void notify(ConfigModel& model, notifications_e what, int data) = 0;
-	};
+	Q_OBJECT
+// public:
+// 	enum notifications_e
+// 	{
+// 		NOTIFY_SET_SOUND,
+// 		NOTIFY_RESIZE,
+// 		NOTIFY_SET_VOLUME_MASTER,
+// 		NOTIFY_SET_VOLUME_LOCAL,
+// 		NOTIFY_SET_VOLUME_REMOTE,
+// 		NOTIFY_SET_PLAYBACK_LOCAL,
+// 		NOTIFY_SET_MUTE_MYSELF_DURING_PB,
+// 		NOTIFY_SET_WINDOW_SIZE,
+// 		NOTIFY_SET_BUBBLE_BUTTONS_BUILD,
+// 		NOTIFY_SET_BUBBLE_STOP_BUILD,
+// 		NOTIFY_SET_SHOW_HOTKEYS_ON_BUTTONS,
+// 		NOTIFY_SET_HOTKEYS_ENABLED,
+// 		NOTIFY_SET_NEXT_UPDATE_CHECK,
+// 	};
 
   public:
 	ConfigModel();
@@ -134,10 +127,7 @@ class ConfigModel
 	}
 	void setHotkeysEnabled(bool enabled);
 
-	void addObserver(Observer* obs);
-	void remObserver(Observer* obs);
-
-	void setConfiguration(int config);
+    void setConfiguration(int config);
 	int getConfiguration();
 
 	const std::vector<SoundInfo>& sounds() const
@@ -161,17 +151,28 @@ class ConfigModel
 	}
 	void setThemeMode(ThemeMode mode);
 
-  private:
+signals:
+	void soundChanged(int index);
+	void soundsResized();
+	void volumeMasterChanged();
+	void volumeLocalChanged();
+	void volumeRemoteChanged();
+	void playbackLocalChanged();
+	void muteMyselfDuringPbChanged();
+	void windowSizeChanged();
+	void showHotkeysOnButtonsChanged();
+	void hotkeysEnabledChanged();
+	void themeModeChanged();
+
+private:
 	std::vector<SoundInfo>& sounds()
 	{
 		return m_sounds[m_activeConfig];
 	}
-	void notify(notifications_e what, int data);
 	std::vector<SoundInfo> getInitialSounds();
 	std::vector<SoundInfo> readConfiguration(QSettings& settings, const QString& name);
 	void writeConfiguration(QSettings& settings, const QString& name, const std::vector<SoundInfo>& sounds);
 
-	std::vector<Observer*> m_obs;
 	std::array<std::vector<SoundInfo>, NUM_CONFIGS> m_sounds;
 	int m_activeConfig;
 

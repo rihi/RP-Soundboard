@@ -130,12 +130,8 @@ MainWindow::MainWindow(ConfigModel* model, QWidget* parent /*= 0*/) :
 	QWidget(parent),
 	ui(new Ui::MainWindow),
 	m_model(model),
-	m_modelObserver(*this),
 	m_buttonBubble(nullptr)
 {
-	/* Ensure resources are loaded */
-	Q_INIT_RESOURCE(qtres);
-
 	m_pauseIcon = QIcon(":/icon/img/pausebutton_32.png");
 	m_playIcon = QIcon(":/icon/img/playarrow_32.png");
 
@@ -256,7 +252,27 @@ MainWindow::MainWindow(ConfigModel* model, QWidget* parent /*= 0*/) :
 
 	createBubbles();
 
-	m_model->addObserver(&m_modelObserver);
+	connect(m_model, &ConfigModel::soundsResized, [this] { createButtons(); });
+	connect(m_model, &ConfigModel::volumeMasterChanged, [this] { ui->sl_volumeMaster->setValue(m_model->getVolumeMaster()); });
+	connect(m_model, &ConfigModel::volumeLocalChanged, [this] { ui->sl_volumeLocal->setValue(m_model->getVolumeLocal()); });
+	connect(m_model, &ConfigModel::volumeRemoteChanged, [this] { ui->sl_volumeRemote->setValue(m_model->getVolumeRemote()); });
+	connect(m_model, &ConfigModel::playbackLocalChanged, [this] { ui->cb_mute_locally->setChecked(!m_model->getPlaybackLocal()); });
+	connect(m_model, &ConfigModel::soundChanged, [this](int index) { updateButtonText(index); });
+	connect(m_model, &ConfigModel::muteMyselfDuringPbChanged, [this] { ui->cb_mute_myself->setChecked(m_model->getMuteMyselfDuringPb()); });
+	connect(m_model, &ConfigModel::windowSizeChanged, [this] {
+		int w = 0, h = 0;
+		m_model->getWindowSize(&w, &h);
+		auto s = size();
+		if (s.width() != w || s.height() != h)
+			resize(w, h);
+	});
+	connect(m_model, &ConfigModel::showHotkeysOnButtonsChanged, [this] {
+		ui->cb_show_hotkeys_on_buttons->setChecked(m_model->getShowHotkeysOnButtons());
+		for(auto i = 0; i < m_buttons.size(); i++)
+			updateButtonText(i);
+	});
+	connect(m_model, &ConfigModel::hotkeysEnabledChanged, [this] { ui->cb_disable_hotkeys->setChecked(!m_model->getHotkeysEnabled()); });
+	connect(m_model, &ConfigModel::themeModeChanged, [this] { applyTheme(m_model->getThemeMode()); });
 
 	/* Force configuration 0 */
 	setConfiguration(0);
@@ -308,7 +324,6 @@ void MainWindow::onConfigHotkey()
 
 MainWindow::~MainWindow()
 {
-	m_model->remObserver(&m_modelObserver);
 	delete ui;
 }
 
@@ -1098,62 +1113,4 @@ void MainWindow::onThemeButtonClicked()
 {
 	bool currentlyDark = themeIsDark(m_model->getThemeMode());
 	m_model->setThemeMode(currentlyDark ? ThemeMode::Light : ThemeMode::Dark);
-}
-
-
-void MainWindow::ModelObserver::notify(ConfigModel& model, ConfigModel::notifications_e what, int data)
-{
-	switch (what)
-	{
-	case ConfigModel::NOTIFY_RESIZE:
-		p.createButtons();
-			break;
-	case ConfigModel::NOTIFY_SET_VOLUME_MASTER:
-		if (p.ui->sl_volumeMaster->value() != model.getVolumeMaster())
-			p.ui->sl_volumeMaster->setValue(model.getVolumeMaster());
-		break;
-	case ConfigModel::NOTIFY_SET_VOLUME_LOCAL:
-		if (p.ui->sl_volumeLocal->value() != model.getVolumeLocal())
-			p.ui->sl_volumeLocal->setValue(model.getVolumeLocal());
-		break;
-	case ConfigModel::NOTIFY_SET_VOLUME_REMOTE:
-		if (p.ui->sl_volumeRemote->value() != model.getVolumeRemote())
-			p.ui->sl_volumeRemote->setValue(model.getVolumeRemote());
-		break;
-	case ConfigModel::NOTIFY_SET_PLAYBACK_LOCAL:
-		if (p.ui->cb_mute_locally->isChecked() != !model.getPlaybackLocal())
-			p.ui->cb_mute_locally->setChecked(!model.getPlaybackLocal());
-		break;
-	case ConfigModel::NOTIFY_SET_SOUND:
-		p.updateButtonText(data);
-		break;
-	case ConfigModel::NOTIFY_SET_MUTE_MYSELF_DURING_PB:
-		if (p.ui->cb_mute_myself->isChecked() != model.getMuteMyselfDuringPb())
-			p.ui->cb_mute_myself->setChecked(model.getMuteMyselfDuringPb());
-		break;
-	case ConfigModel::NOTIFY_SET_WINDOW_SIZE:
-	{
-		QSize s = p.size();
-		int w = 0, h = 0;
-		model.getWindowSize(&w, &h);
-		if (s.width() != w || s.height() != h)
-			p.resize(w, h);
-	}
-	break;
-	case ConfigModel::NOTIFY_SET_SHOW_HOTKEYS_ON_BUTTONS:
-		if (p.ui->cb_show_hotkeys_on_buttons->isChecked() != model.getShowHotkeysOnButtons())
-			p.ui->cb_show_hotkeys_on_buttons->setChecked(model.getShowHotkeysOnButtons());
-		for (size_t i = 0; i < p.m_buttons.size(); i++)
-			p.updateButtonText(i);
-		break;
-	case ConfigModel::NOTIFY_SET_HOTKEYS_ENABLED:
-		if (p.ui->cb_disable_hotkeys->isChecked() == model.getHotkeysEnabled())
-			p.ui->cb_disable_hotkeys->setChecked(!model.getHotkeysEnabled());
-		break;
-	case ConfigModel::NOTIFY_SET_THEME_MODE:
-		p.applyTheme(static_cast<ThemeMode>(data));
-		break;
-	default:
-		break;
-	}
 }
